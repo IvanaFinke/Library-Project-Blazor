@@ -1,0 +1,103 @@
+﻿@using Libreria.Services;
+@using Libreria.Models;
+@page "/"
+@inject ILibrary LibraryService
+
+<h1 class="justify-items-center">Welcome to the Library!</h1>
+
+<h2>Our Books collection:</h2>
+
+@if(books == null)
+{
+    <p>Loading</p>
+}
+else
+{
+    foreach(var book in books)
+    {
+        <li>
+            @book.Id - <strong>@book.Title</strong> - @book.Date - $@book.Price - @book.Description
+            <button @onclick="() => DeleteAsync(book.Id)">Delete Book</button>
+            <button @onclick="() => GetBookById(book.Id)">Get by Id</button>
+        </li>
+    }
+}
+
+@if(selectedBook != null)
+{
+    <h3>Selected book:</h3>
+    <p>
+    @selectedBook.Id - <strong>@selectedBook.Title</strong> - @selectedBook.Date - $@selectedBook.Price - @selectedBook.Description
+    </p>
+
+}
+
+<br /><br />
+
+<button @onclick="ShowAddForm">Add Book</button>
+
+
+@if(showAdd)
+{
+    <div>
+        <h3>Enter your new Book</h3>
+        <input placeholder="Title" @bind="newTitle"/>
+        <input placeholder="Date" @bind="newDate"/>
+        <input type="number" placeholder="Price" @bind="newPrice" step="0.01"/>
+        <textarea placeholder="Description" @bind="newDescription"></textarea>
+        <button @onclick="AddBook">Add Book</button>
+        <button @onclick="CancelAdd">Cancel</button>
+    </div>
+}
+
+
+
+@code{
+    private Book[]? books;
+    private Book? selectedBook;
+    private bool showAdd = false;
+    private string newTitle = "";
+    private string newDate = "";
+    private decimal newPrice = 0m;
+    private string newDescription = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        books = await LibraryService.GetBooksAsync();
+    }
+
+    private void ShowAddForm() => showAdd = true;
+
+    private void CancelAdd()
+    {
+        showAdd = false;
+        newTitle = newDate = newDescription = "";
+    }
+
+    private async Task AddBook()
+    {
+        var book = new Book
+            {
+                Title = newTitle,
+                Date = newDate,
+                Price = newPrice,
+                Description = newDescription
+            };
+        await LibraryService.AddBookAsync(book);
+        books = await LibraryService.GetBooksAsync();
+        CancelAdd();
+    }
+
+    private async Task DeleteAsync(int id)
+    {
+        await LibraryService.DeleteAsync(id);
+        books = await LibraryService.GetBooksAsync();
+    }
+
+    private async Task GetBookById(int id)
+    {
+        selectedBook = await LibraryService.GetBookByIdAsync(id);
+    }
+}
+
+
