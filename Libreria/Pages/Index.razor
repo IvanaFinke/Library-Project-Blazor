@@ -3,7 +3,8 @@
 @page "/"
 @inject ILibrary LibraryService
 
-<h1 class="justify-items-center">Welcome to the Library!</h1>
+<h1 class="text-center border-color-white">Welcome to the Library!</h1>
+
 
 <h2>Our Books collection:</h2>
 
@@ -18,23 +19,34 @@ else
         <li>
             @book.Id - <strong>@book.Title</strong> - @book.Date - $@book.Price - @book.Description
             <button @onclick="() => DeleteAsync(book.Id)">Delete Book</button>
-            <button @onclick="() => GetBookById(book.Id)">Get by Id</button>
         </li>
     }
 }
 
-@if(selectedBook != null)
-{
-    <h3>Selected book:</h3>
-    <p>
-    @selectedBook.Id - <strong>@selectedBook.Title</strong> - @selectedBook.Date - $@selectedBook.Price - @selectedBook.Description
-    </p>
 
-}
 
 <br /><br />
 
 <button @onclick="ShowAddForm">Add Book</button>
+<button @onclick="ShowGetByIdForm">Get by Id</button>
+
+@if (showGetById)
+{
+    <div>
+        <h3>Get Book by Id</h3>
+        <input type="number" placeholder="Enter Book Id" @bind="inputId"/>
+        <button @onclick="() => GetBookById(inputId)">Get Book</button>
+    </div>
+}
+
+@if (selectedBook != null)
+{
+    <h3>Selected book:</h3>
+    <p>
+        @selectedBook.Id - <strong>@selectedBook.Title</strong> - @selectedBook.Date - $@selectedBook.Price - @selectedBook.Description
+    </p>
+
+}
 
 
 @if(showAdd)
@@ -60,13 +72,15 @@ else
     private string newDate = "";
     private decimal newPrice = 0m;
     private string newDescription = "";
+    private bool showGetById = false;
+    private int inputId;
 
     protected override async Task OnInitializedAsync()
     {
         books = await LibraryService.GetBooksAsync();
     }
 
-    private void ShowAddForm() => showAdd = true;
+    private void ShowAddForm() => showAdd = !showAdd;
 
     private void CancelAdd()
     {
@@ -98,6 +112,8 @@ else
     {
         selectedBook = await LibraryService.GetBookByIdAsync(id);
     }
+
+    private void ShowGetByIdForm() => showGetById = !showGetById;
 }
 
 
